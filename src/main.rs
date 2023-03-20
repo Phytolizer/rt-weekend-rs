@@ -229,7 +229,8 @@ fn main() {
     let progress = ProgressBar::new((image_height * image_width) as u64)
         .with_style(
             indicatif::ProgressStyle::default_bar()
-                .template("[{elapsed_precise}/{duration_precise}] {bar:40} {pos:>7}/{len:7} {msg}")
+                .progress_chars("█▉▊▋▌▍▎▏ ")
+                .template("[{elapsed_precise}/{duration_precise}] [{wide_bar}] {pos:>7}/{len:7} ({percent:>3}%) {msg}")
                 .unwrap(),
         )
         .with_message(format!("Rendering {image_width}x{image_height}"));
