@@ -24,6 +24,13 @@ impl Vec3 {
     pub fn reflect(&self, normal: &Self) -> Self {
         *self - 2.0 * self.dot(normal) * *normal
     }
+
+    pub fn refract(&self, normal: &Self, etai_over_etat: f64) -> Self {
+        let cos_theta = (-*self).dot(normal).min(1.0);
+        let r_out_perp = etai_over_etat * (*self + cos_theta * *normal);
+        let r_out_parallel = -(1.0 - r_out_perp.norm_squared()).abs().sqrt() * *normal;
+        r_out_perp + r_out_parallel
+    }
 }
 
 impl Deref for Vec3 {

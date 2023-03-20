@@ -1,5 +1,6 @@
 use crate::{hittable::HitRecord, ray::Ray, Color};
 
+pub mod dielectric;
 pub mod lambertian;
 pub mod metal;
 

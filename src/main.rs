@@ -13,6 +13,7 @@ use rand::Rng;
 use ray::Ray;
 use rayon::prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 
+use crate::material::dielectric::Dielectric;
 use crate::{
     camera::Camera,
     hittable::{hittable_list::HittableList, sphere::Sphere},
@@ -98,13 +99,13 @@ fn main() {
     const aspect_ratio: f64 = 16.0 / 9.0;
     const image_width: usize = 400;
     const image_height: usize = (image_width as f64 / aspect_ratio) as usize;
-    const samples_per_pixel: usize = 100;
+    const samples_per_pixel: usize = 400;
     const max_depth: usize = 50;
 
     let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
-    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let material_center = Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left = Arc::new(Dielectric::new(1.5));
+    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
     let world = {
         let mut world = HittableList::new();
@@ -121,6 +122,11 @@ fn main() {
         world.add(Box::new(Sphere::new(
             Point3::new(-1.0, 0.0, -1.0),
             0.5,
+            material_left.clone(),
+        )));
+        world.add(Box::new(Sphere::new(
+            Point3::new(-1.0, 0.0, -1.0),
+            -0.4,
             material_left,
         )));
         world.add(Box::new(Sphere::new(
