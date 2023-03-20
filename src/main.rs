@@ -2,19 +2,17 @@
 
 use std::f64;
 use std::sync::Arc;
+use std::time::Instant;
 
 use clap::Parser;
 use color::write_color;
 use hittable::Hittable;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
-use indicatif::ProgressBar;
-use indicatif::ProgressFinish;
-use itertools::Itertools;
 use material::ScatterRecord;
 use rand::Rng;
 use ray::Ray;
-use rayon::prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::material::dielectric::Dielectric;
 use crate::material::Material;
@@ -227,36 +225,37 @@ fn main() {
 
     let mut img = RgbImage::new(image_width as u32, image_height as u32);
 
-    let progress = ProgressBar::new((image_height * image_width) as u64)
-        .with_style(
+    let render_start = Instant::now();
+    let (tx, rx) = crossbeam_channel::unbounded::<(usize, usize, Color)>();
+    (0..image_height)
+        .into_par_iter()
+        .progress_with_style(
             indicatif::ProgressStyle::default_bar()
                 .progress_chars("█▉▊▋▌▍▎▏ ")
                 .template("[{elapsed_precise}/{duration_precise}] [{wide_bar}] {pos:>7}/{len:7} ({percent:>3}%) {msg}")
                 .unwrap(),
         )
-        .with_finish(ProgressFinish::AndLeave)
-        .with_message(format!("Rendering {image_width}x{image_height}"));
-    let (tx, rx) = crossbeam_channel::unbounded::<(usize, usize, Color)>();
-    (0..image_height)
-        .cartesian_product(0..image_width)
-        .par_bridge()
-        .into_par_iter()
-        .progress_with(progress)
-        .for_each_with(tx, |tx, (j, i)| {
-            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-            for _ in 0..samples_per_pixel {
-                let u =
-                    (i as f64 + rand::thread_rng().gen_range(0.0..1.0)) / (image_width - 1) as f64;
-                let v =
-                    (j as f64 + rand::thread_rng().gen_range(0.0..1.0)) / (image_height - 1) as f64;
-                let r = camera.get_ray(u, v);
-                pixel_color += ray_color(&r, world.as_ref(), max_depth);
+        .with_message(format!("Rendering {image_width}x{image_height}"))
+        .for_each_with(tx, |tx, j| {
+            for i in 0..image_width {
+                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+                for _ in 0..samples_per_pixel {
+                    let u = (i as f64 + rand::thread_rng().gen_range(0.0..1.0))
+                        / (image_width - 1) as f64;
+                    let v = (j as f64 + rand::thread_rng().gen_range(0.0..1.0))
+                        / (image_height - 1) as f64;
+                    let r = camera.get_ray(u, v);
+                    pixel_color += ray_color(&r, world.as_ref(), max_depth);
+                }
+                tx.send((i, image_height - j - 1, pixel_color)).unwrap();
             }
-            tx.send((i, image_height - j - 1, pixel_color)).unwrap();
         });
     while let Ok((x, y, color)) = rx.recv() {
         write_color(&mut img, (x, y), &color, samples_per_pixel);
     }
+    let render_end = Instant::now();
+    let render_time = render_end - render_start;
+    println!("Rendering took {} seconds", render_time.as_secs_f64());
 
     match state {
         State::Online(mut state) => {
