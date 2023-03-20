@@ -359,6 +359,7 @@ dependencies = [
  "console",
  "number_prefix",
  "portable-atomic",
+ "rayon",
  "unicode-width",
 ]
 
@@ -740,6 +741,7 @@ name = "rt-weekend"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "crossbeam-channel",
  "image",
  "indicatif",
  "itertools",
