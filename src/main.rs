@@ -59,6 +59,19 @@ fn random_unit_vector() -> Vec3 {
     random_vec_in_unit_sphere().normalize().into()
 }
 
+fn random_vec_in_unit_disk() -> Vec3 {
+    loop {
+        let p = Vec3::new(
+            rand::thread_rng().gen_range(-1.0..1.0),
+            rand::thread_rng().gen_range(-1.0..1.0),
+            0.0,
+        );
+        if p.dot(&p) < 1.0 {
+            return p;
+        }
+    }
+}
+
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: usize) -> Color {
     if depth == 0 {
         return Color::zeros();
@@ -140,12 +153,20 @@ fn main() {
         world
     };
 
+    let lookfrom = Point3::new(3.0, 3.0, 2.0);
+    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = (lookfrom - lookat).magnitude();
+    let aperture = 2.0;
+
     let camera = Camera::new(
-        Point3::new(-2.0, 2.0, 1.0),
-        Point3::new(0.0, 0.0, -1.0),
-        Vec3::new(0.0, 1.0, 0.0),
+        lookfrom,
+        lookat,
+        vup,
         20.0,
         aspect_ratio,
+        aperture,
+        dist_to_focus,
     );
 
     let options = Options::parse();
