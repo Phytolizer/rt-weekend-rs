@@ -9,6 +9,7 @@ use hittable::Hittable;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use indicatif::ProgressBar;
+use indicatif::ProgressFinish;
 use itertools::Itertools;
 use material::ScatterRecord;
 use rand::Rng;
@@ -233,6 +234,7 @@ fn main() {
                 .template("[{elapsed_precise}/{duration_precise}] [{wide_bar}] {pos:>7}/{len:7} ({percent:>3}%) {msg}")
                 .unwrap(),
         )
+        .with_finish(ProgressFinish::AndLeave)
         .with_message(format!("Rendering {image_width}x{image_height}"));
     let (tx, rx) = crossbeam_channel::unbounded::<(usize, usize, Color)>();
     (0..image_height)
