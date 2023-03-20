@@ -1,5 +1,6 @@
 #![allow(non_upper_case_globals)]
 
+use std::f64;
 use std::sync::Arc;
 
 use clap::Parser;
@@ -102,6 +103,8 @@ fn main() {
     const samples_per_pixel: usize = 400;
     const max_depth: usize = 50;
 
+    let r = (f64::consts::PI / 4.0).cos();
+
     let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = Arc::new(Dielectric::new(1.5));
@@ -137,7 +140,13 @@ fn main() {
         world
     };
 
-    let camera = Camera::new();
+    let camera = Camera::new(
+        Point3::new(-2.0, 2.0, 1.0),
+        Point3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio,
+    );
 
     let options = Options::parse();
     let state = if options.live {
