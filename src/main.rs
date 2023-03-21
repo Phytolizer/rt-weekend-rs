@@ -9,9 +9,11 @@ use std::time::Instant;
 use clap::Parser;
 use color::write_color;
 use hittable::moving_sphere::MovingSphere;
+use hittable::xy_rect::XyRect;
 use hittable::Hittable;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
+use material::diffuse_light::DiffuseLight;
 use material::ScatterRecord;
 use rand::Rng;
 use ray::Ray;
@@ -81,25 +83,25 @@ fn random_vec_in_unit_disk() -> Vec3 {
     }
 }
 
-fn ray_color(r: &Ray, world: &dyn Hittable, depth: usize) -> Color {
+fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: usize) -> Color {
     if depth == 0 {
         return Color::zeros();
     }
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
+        let emitted = rec.mat_ptr.emitted(rec.u, rec.v, rec.p);
         if let Some(ScatterRecord {
             attenuation,
             scattered,
         }) = rec.mat_ptr.scatter(r, &rec)
         {
-            return attenuation
-                .component_mul(&ray_color(&scattered, world, depth - 1))
-                .into();
+            return emitted
+                + attenuation
+                    .component_mul(&ray_color(&scattered, background, world, depth - 1))
+                    .into();
         }
-        return Color::zeros();
+        return emitted;
     }
-    let unit_direction = r.direction.normalize();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+    background
 }
 
 #[derive(Debug, clap::Parser)]
@@ -247,8 +249,31 @@ fn earth() -> Box<dyn Hittable> {
     objects.add(Box::new(Sphere::new(
         Point3::new(0.0, 0.0, 0.0),
         2.0,
-        earth_mat.clone(),
+        earth_mat,
     )));
+
+    Box::new(objects)
+}
+
+fn simple_light() -> Box<dyn Hittable> {
+    let mut objects = HittableList::new();
+
+    let pertext = Arc::new(NoiseTexture::new(4.0));
+
+    let permat = Arc::new(Lambertian::new_tex(pertext));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        permat.clone(),
+    )));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        permat,
+    )));
+
+    let difflight = Arc::new(DiffuseLight::new_color(Color::new(4.0, 4.0, 4.0)));
+    objects.add(Box::new(XyRect::new(3.0, 5.0, 1.0, 3.0, -2.0, difflight)));
 
     Box::new(objects)
 }
@@ -257,7 +282,6 @@ fn main() {
     const aspect_ratio: f64 = 16.0 / 9.0;
     const image_width: usize = 400;
     const image_height: usize = (image_width as f64 / aspect_ratio) as usize;
-    const samples_per_pixel: usize = 100;
     const max_depth: usize = 50;
 
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -267,63 +291,97 @@ fn main() {
     let dist_to_focus = 10.0;
     let aperture = 0.0;
 
+    let mut background = Color::new(0.0, 0.0, 0.0);
+    let mut samples_per_pixel = 100;
+
     let (camera, world) = match 0 {
-        1 => (
-            Camera::new(
-                lookfrom,
-                lookat,
-                vup,
-                vfov,
-                aspect_ratio,
-                aperture,
-                dist_to_focus,
-                0.0,
-                1.0,
-            ),
-            random_scene(),
-        ),
-        2 => (
-            Camera::new(
-                lookfrom,
-                lookat,
-                vup,
-                vfov,
-                aspect_ratio,
-                aperture,
-                dist_to_focus,
-                0.0,
-                1.0,
-            ),
-            two_spheres(),
-        ),
-        3 => (
-            Camera::new(
-                lookfrom,
-                lookat,
-                vup,
-                vfov,
-                aspect_ratio,
-                aperture,
-                dist_to_focus,
-                0.0,
-                1.0,
-            ),
-            two_perlin_spheres(),
-        ),
-        _ => (
-            Camera::new(
-                lookfrom,
-                lookat,
-                vup,
-                vfov,
-                aspect_ratio,
-                aperture,
-                dist_to_focus,
-                0.0,
-                1.0,
-            ),
-            earth(),
-        ),
+        1 => {
+            background = Color::new(0.7, 0.8, 1.0);
+            (
+                Camera::new(
+                    lookfrom,
+                    lookat,
+                    vup,
+                    vfov,
+                    aspect_ratio,
+                    aperture,
+                    dist_to_focus,
+                    0.0,
+                    1.0,
+                ),
+                random_scene(),
+            )
+        }
+        2 => {
+            background = Color::new(0.7, 0.8, 1.0);
+            (
+                Camera::new(
+                    lookfrom,
+                    lookat,
+                    vup,
+                    vfov,
+                    aspect_ratio,
+                    aperture,
+                    dist_to_focus,
+                    0.0,
+                    1.0,
+                ),
+                two_spheres(),
+            )
+        }
+        3 => {
+            background = Color::new(0.7, 0.8, 1.0);
+            (
+                Camera::new(
+                    lookfrom,
+                    lookat,
+                    vup,
+                    vfov,
+                    aspect_ratio,
+                    aperture,
+                    dist_to_focus,
+                    0.0,
+                    1.0,
+                ),
+                two_perlin_spheres(),
+            )
+        }
+        4 => {
+            background = Color::new(0.7, 0.8, 1.0);
+            (
+                Camera::new(
+                    lookfrom,
+                    lookat,
+                    vup,
+                    vfov,
+                    aspect_ratio,
+                    aperture,
+                    dist_to_focus,
+                    0.0,
+                    1.0,
+                ),
+                earth(),
+            )
+        }
+        _ => {
+            samples_per_pixel = 400;
+            let lookfrom = Point3::new(26.0, 3.0, 6.0);
+            let lookat = Point3::new(0.0, 2.0, 0.0);
+            (
+                Camera::new(
+                    lookfrom,
+                    lookat,
+                    vup,
+                    vfov,
+                    aspect_ratio,
+                    aperture,
+                    dist_to_focus,
+                    0.0,
+                    1.0,
+                ),
+                simple_light(),
+            )
+        }
     };
 
     let options = Options::parse();
@@ -373,7 +431,7 @@ fn main() {
                     let v = (j as f64 + rand::thread_rng().gen_range(0.0..1.0))
                         / (image_height - 1) as f64;
                     let r = camera.get_ray(u, v);
-                    pixel_color += ray_color(&r, world.as_ref(), max_depth);
+                    pixel_color += ray_color(&r, background, world.as_ref(), max_depth);
                 }
                 tx.send((i, image_height - j - 1, pixel_color)).unwrap();
             }
