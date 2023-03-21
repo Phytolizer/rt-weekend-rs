@@ -1,3 +1,5 @@
+use crate::aabb::Aabb;
+
 use super::{HitRecord, Hittable};
 
 pub struct HittableList {
@@ -29,5 +31,17 @@ impl Hittable for HittableList {
         }
 
         temp_rec
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let mut temp_box = None;
+
+        for object in &self.objects {
+            if let Some(bb) = object.bounding_box(time0, time1) {
+                temp_box = Some(temp_box.map(|tb| Aabb::surrounding(&tb, &bb)).unwrap_or(bb));
+            }
+        }
+
+        temp_box
     }
 }

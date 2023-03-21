@@ -1,4 +1,5 @@
 #![allow(non_upper_case_globals)]
+#![allow(dead_code)]
 
 use std::f64;
 use std::sync::Arc;
@@ -16,7 +17,6 @@ use ray::Ray;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::material::dielectric::Dielectric;
-use crate::material::Material;
 use crate::{
     camera::Camera,
     hittable::{hittable_list::HittableList, sphere::Sphere},
@@ -29,6 +29,7 @@ use vec3::Vec3;
 type Point3 = Vec3;
 type Color = Vec3;
 
+mod aabb;
 mod camera;
 mod color;
 mod hittable;

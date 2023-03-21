@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
+use crate::vec3::Vec3;
 use crate::{material::Material, ray::Ray, Point3};
 
 use super::{HitRecord, Hittable};
@@ -46,5 +48,12 @@ impl Hittable for Sphere {
         let p = ray.at(t);
         let normal = (p - self.center) / self.radius;
         Some(HitRecord::new(p, normal, t, ray, self.mat_ptr.clone()))
+    }
+
+    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+        Some(Aabb::new(
+            self.center - Vec3::new(self.radius, self.radius, self.radius),
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
+        ))
     }
 }

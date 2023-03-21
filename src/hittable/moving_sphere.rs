@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
 use crate::material::Material;
 use crate::ray::Ray;
+use crate::vec3::Vec3;
 use crate::Point3;
 
 use super::HitRecord;
@@ -67,5 +69,17 @@ impl Hittable for MovingSphere {
         let p = ray.at(t);
         let normal = (p - self.center(ray.time)) / self.radius;
         Some(HitRecord::new(p, normal, t, ray, self.mat_ptr.clone()))
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let box0 = Aabb::new(
+            self.center(time0) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(time0) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        let box1 = Aabb::new(
+            self.center(time1) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(time1) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        Some(Aabb::surrounding(&box0, &box1))
     }
 }

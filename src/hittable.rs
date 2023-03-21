@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
+use crate::aabb::Aabb;
 use crate::{material::Material, ray::Ray, Point3, Vec3};
 
+pub mod bvh_node;
 pub mod hittable_list;
-pub mod sphere;
 pub mod moving_sphere;
+pub mod sphere;
 
 pub struct HitRecord {
     pub p: Point3,
@@ -40,4 +42,5 @@ impl HitRecord {
 
 pub trait Hittable: Send + Sync {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
 }
