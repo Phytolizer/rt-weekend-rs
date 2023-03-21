@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Deref, DerefMut, Div, Mul, Neg, Sub};
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec3(nalgebra::Vector3<f64>);
 
 impl Vec3 {
