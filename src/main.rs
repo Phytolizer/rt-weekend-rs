@@ -11,6 +11,7 @@ use color::write_color;
 use hittable::aa_rect::XyRect;
 use hittable::aa_rect::XzRect;
 use hittable::aa_rect::YzRect;
+use hittable::box_obj::BoxObj;
 use hittable::moving_sphere::MovingSphere;
 use hittable::Hittable;
 use image::RgbImage;
@@ -321,7 +322,24 @@ fn cornell_box() -> Box<dyn Hittable> {
         555.0,
         white.clone(),
     )));
-    objects.add(Box::new(XyRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white)));
+    objects.add(Box::new(XyRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+    objects.add(Box::new(BoxObj::new(
+        Point3::new(130.0, 0.0, 65.0),
+        Point3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    )));
+    objects.add(Box::new(BoxObj::new(
+        Point3::new(265.0, 0.0, 295.0),
+        Point3::new(430.0, 330.0, 460.0),
+        white,
+    )));
 
     Box::new(objects)
 }

@@ -3,11 +3,12 @@ use std::sync::Arc;
 use crate::aabb::Aabb;
 use crate::{material::Material, ray::Ray, Point3, Vec3};
 
+pub mod aa_rect;
+pub mod box_obj;
 pub mod bvh_node;
 pub mod hittable_list;
 pub mod moving_sphere;
 pub mod sphere;
-pub mod aa_rect;
 
 pub struct HitRecord {
     pub p: Point3,
