@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 use std::f64;
+use std::io::Cursor;
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -16,6 +17,7 @@ use rand::Rng;
 use ray::Ray;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use texture::checker::CheckerTexture;
+use texture::image::ImageTexture;
 use texture::noise::NoiseTexture;
 
 use crate::material::dielectric::Dielectric;
@@ -235,6 +237,22 @@ fn two_perlin_spheres() -> Box<dyn Hittable> {
     Box::new(objects)
 }
 
+fn earth() -> Box<dyn Hittable> {
+    let mut objects = HittableList::new();
+
+    const EARTH_DATA: &[u8] = include_bytes!("texture/image/earthmap.jpg");
+    let earth_tex = Arc::new(ImageTexture::new(&mut Cursor::new(EARTH_DATA)));
+
+    let earth_mat = Arc::new(Lambertian::new_tex(earth_tex));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, 0.0, 0.0),
+        2.0,
+        earth_mat.clone(),
+    )));
+
+    Box::new(objects)
+}
+
 fn main() {
     const aspect_ratio: f64 = 16.0 / 9.0;
     const image_width: usize = 400;
@@ -278,7 +296,7 @@ fn main() {
             ),
             two_spheres(),
         ),
-        _ => (
+        3 => (
             Camera::new(
                 lookfrom,
                 lookat,
@@ -291,6 +309,20 @@ fn main() {
                 1.0,
             ),
             two_perlin_spheres(),
+        ),
+        _ => (
+            Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                vfov,
+                aspect_ratio,
+                aperture,
+                dist_to_focus,
+                0.0,
+                1.0,
+            ),
+            earth(),
         ),
     };
 
