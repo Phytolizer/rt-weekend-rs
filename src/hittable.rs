@@ -8,7 +8,9 @@ pub mod box_obj;
 pub mod bvh_node;
 pub mod hittable_list;
 pub mod moving_sphere;
+pub mod rotate;
 pub mod sphere;
+pub mod translate;
 
 pub struct HitRecord {
     pub p: Point3,
