@@ -4,6 +4,7 @@ use crate::{material::Material, ray::Ray, Point3, Vec3};
 
 pub mod hittable_list;
 pub mod sphere;
+pub mod moving_sphere;
 
 pub struct HitRecord {
     pub p: Point3,

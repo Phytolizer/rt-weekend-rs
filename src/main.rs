@@ -6,6 +6,7 @@ use std::time::Instant;
 
 use clap::Parser;
 use color::write_color;
+use hittable::moving_sphere::MovingSphere;
 use hittable::Hittable;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
@@ -130,21 +131,31 @@ fn random_scene() -> Box<dyn Hittable> {
             );
 
             if (center - Vec3::new(4.0, 0.2, 0.0)).magnitude() > 0.9 {
-                let sphere_material: Arc<dyn Material> = if choose_mat < 0.8 {
+                if choose_mat < 0.8 {
                     // diffuse
                     let albedo: Vec3 = random_vec().component_mul(&random_vec()).into();
-                    Arc::new(Lambertian::new(albedo))
+                    let sphere_material = Arc::new(Lambertian::new(albedo));
+                    let center2 =
+                        center + Vec3::new(0.0, rand::thread_rng().gen_range(0.0..0.5), 0.0);
+                    world.add(Box::new(MovingSphere::new(
+                        center,
+                        center2,
+                        0.0,
+                        1.0,
+                        0.2,
+                        sphere_material,
+                    )));
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = random_vec_range(0.5, 1.0);
                     let fuzz = rand::thread_rng().gen_range(0.0..0.5);
-                    Arc::new(Metal::new(albedo, fuzz))
+                    let sphere_material = Arc::new(Metal::new(albedo, fuzz));
+                    world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
                 } else {
                     // glass
-                    Arc::new(Dielectric::new(1.5))
-                };
-
-                world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                    let sphere_material = Arc::new(Dielectric::new(1.5));
+                    world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
+                }
             }
         }
     }
@@ -174,10 +185,10 @@ fn random_scene() -> Box<dyn Hittable> {
 }
 
 fn main() {
-    const aspect_ratio: f64 = 3.0 / 2.0;
-    const image_width: usize = 1200;
+    const aspect_ratio: f64 = 16.0 / 9.0;
+    const image_width: usize = 400;
     const image_height: usize = (image_width as f64 / aspect_ratio) as usize;
-    const samples_per_pixel: usize = 500;
+    const samples_per_pixel: usize = 100;
     const max_depth: usize = 50;
 
     let world = random_scene();
@@ -196,6 +207,8 @@ fn main() {
         aspect_ratio,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     let options = Options::parse();
