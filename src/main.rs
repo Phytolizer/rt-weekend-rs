@@ -15,6 +15,7 @@ use material::ScatterRecord;
 use rand::Rng;
 use ray::Ray;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+use texture::checker::CheckerTexture;
 
 use crate::material::dielectric::Dielectric;
 use crate::{
@@ -35,6 +36,7 @@ mod color;
 mod hittable;
 mod material;
 mod ray;
+mod texture;
 
 fn random_vec() -> Vec3 {
     random_vec_range(0.0, 1.0)
@@ -115,7 +117,11 @@ enum State {
 fn random_scene() -> Box<dyn Hittable> {
     let mut world = HittableList::new();
 
-    let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Arc::new(CheckerTexture::new_color(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+    let ground_material = Arc::new(Lambertian::new_tex(checker));
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -185,6 +191,29 @@ fn random_scene() -> Box<dyn Hittable> {
     Box::new(world)
 }
 
+fn two_spheres() -> Box<dyn Hittable> {
+    let mut objects = HittableList::new();
+
+    let checker = Arc::new(CheckerTexture::new_color(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+
+    let checker_mat = Arc::new(Lambertian::new_tex(checker));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, -10.0, 0.0),
+        10.0,
+        checker_mat.clone(),
+    )));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, 10.0, 0.0),
+        10.0,
+        checker_mat,
+    )));
+
+    Box::new(objects)
+}
+
 fn main() {
     const aspect_ratio: f64 = 16.0 / 9.0;
     const image_width: usize = 400;
@@ -192,25 +221,43 @@ fn main() {
     const samples_per_pixel: usize = 100;
     const max_depth: usize = 50;
 
-    let world = random_scene();
-
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
     let lookat = Point3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 20.0;
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 
-    let camera = Camera::new(
-        lookfrom,
-        lookat,
-        vup,
-        20.0,
-        aspect_ratio,
-        aperture,
-        dist_to_focus,
-        0.0,
-        1.0,
-    );
+    let (camera, world) = match 0 {
+        1 => (
+            Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                vfov,
+                aspect_ratio,
+                aperture,
+                dist_to_focus,
+                0.0,
+                1.0,
+            ),
+            random_scene(),
+        ),
+        _ => (
+            Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                vfov,
+                aspect_ratio,
+                aperture,
+                dist_to_focus,
+                0.0,
+                1.0,
+            ),
+            two_spheres(),
+        ),
+    };
 
     let options = Options::parse();
     let state = if options.live {

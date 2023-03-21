@@ -6,6 +6,7 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Point3;
 
+use super::sphere::Sphere;
 use super::HitRecord;
 use super::Hittable;
 
@@ -68,7 +69,16 @@ impl Hittable for MovingSphere {
         let t = root;
         let p = ray.at(t);
         let normal = (p - self.center(ray.time)) / self.radius;
-        Some(HitRecord::new(p, normal, t, ray, self.mat_ptr.clone()))
+        let (u, v) = Sphere::get_uv(normal);
+        Some(HitRecord::new(
+            p,
+            normal,
+            t,
+            u,
+            v,
+            ray,
+            self.mat_ptr.clone(),
+        ))
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {

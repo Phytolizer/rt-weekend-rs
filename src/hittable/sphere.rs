@@ -1,3 +1,4 @@
+use std::f64;
 use std::sync::Arc;
 
 use crate::aabb::Aabb;
@@ -19,6 +20,13 @@ impl Sphere {
             radius,
             mat_ptr,
         }
+    }
+
+    pub(super) fn get_uv(p: Point3) -> (f64, f64) {
+        let theta = (-p.y).acos();
+        let phi = (-p.z).atan2(p.x) + f64::consts::PI;
+
+        (phi / f64::consts::TAU, theta / f64::consts::PI)
     }
 }
 
@@ -47,7 +55,16 @@ impl Hittable for Sphere {
         let t = root;
         let p = ray.at(t);
         let normal = (p - self.center) / self.radius;
-        Some(HitRecord::new(p, normal, t, ray, self.mat_ptr.clone()))
+        let (u, v) = Self::get_uv(normal);
+        Some(HitRecord::new(
+            p,
+            normal,
+            t,
+            u,
+            v,
+            ray,
+            self.mat_ptr.clone(),
+        ))
     }
 
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
