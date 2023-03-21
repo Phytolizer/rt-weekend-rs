@@ -247,7 +247,7 @@ fn main() {
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let vfov = 20.0;
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
+    let aperture = 0.0;
 
     let (camera, world) = match 0 {
         1 => (
