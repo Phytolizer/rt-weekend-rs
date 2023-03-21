@@ -7,7 +7,7 @@ pub mod bvh_node;
 pub mod hittable_list;
 pub mod moving_sphere;
 pub mod sphere;
-pub mod xy_rect;
+pub mod aa_rect;
 
 pub struct HitRecord {
     pub p: Point3,

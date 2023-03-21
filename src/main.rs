@@ -8,8 +8,10 @@ use std::time::Instant;
 
 use clap::Parser;
 use color::write_color;
+use hittable::aa_rect::XyRect;
+use hittable::aa_rect::XzRect;
+use hittable::aa_rect::YzRect;
 use hittable::moving_sphere::MovingSphere;
-use hittable::xy_rect::XyRect;
 use hittable::Hittable;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
@@ -290,10 +292,43 @@ fn simple_light() -> Box<dyn Hittable> {
     Box::new(objects)
 }
 
+fn cornell_box() -> Box<dyn Hittable> {
+    let mut objects = HittableList::new();
+
+    let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::new_color(Color::new(15.0, 15.0, 15.0)));
+
+    objects.add(Box::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+    objects.add(Box::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+    objects.add(Box::new(XzRect::new(
+        213.0, 343.0, 227.0, 332.0, 554.0, light,
+    )));
+    objects.add(Box::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    )));
+    objects.add(Box::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+    objects.add(Box::new(XyRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white)));
+
+    Box::new(objects)
+}
+
 fn main() {
-    const aspect_ratio: f64 = 16.0 / 9.0;
-    const image_width: usize = 400;
-    const image_height: usize = (image_width as f64 / aspect_ratio) as usize;
+    let mut aspect_ratio = 16.0 / 9.0;
+    let mut image_width = 400;
     const max_depth: usize = 50;
 
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -375,7 +410,7 @@ fn main() {
                 earth(),
             )
         }
-        _ => {
+        5 => {
             samples_per_pixel = 400;
             let lookfrom = Point3::new(26.0, 3.0, 6.0);
             let lookat = Point3::new(0.0, 2.0, 0.0);
@@ -394,7 +429,31 @@ fn main() {
                 simple_light(),
             )
         }
+        _ => {
+            aspect_ratio = 1.0;
+            image_width = 600;
+            samples_per_pixel = 200;
+            let lookfrom = Point3::new(278.0, 278.0, -800.0);
+            let lookat = Point3::new(278.0, 278.0, 0.0);
+            let vfov = 40.0;
+            (
+                Camera::new(
+                    lookfrom,
+                    lookat,
+                    vup,
+                    vfov,
+                    aspect_ratio,
+                    aperture,
+                    dist_to_focus,
+                    0.0,
+                    1.0,
+                ),
+                cornell_box(),
+            )
+        }
     };
+
+    let image_height = (image_width as f64 / aspect_ratio) as usize;
 
     let options = Options::parse();
     let state = if options.live {
