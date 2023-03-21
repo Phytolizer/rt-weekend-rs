@@ -219,7 +219,7 @@ fn two_spheres() -> Box<dyn Hittable> {
 fn two_perlin_spheres() -> Box<dyn Hittable> {
     let mut objects = HittableList::new();
 
-    let pertext = Arc::new(NoiseTexture::new());
+    let pertext = Arc::new(NoiseTexture::new(4.0));
     let perlin_mat = Arc::new(Lambertian::new_tex(pertext));
     objects.add(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
