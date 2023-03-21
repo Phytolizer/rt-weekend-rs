@@ -273,7 +273,19 @@ fn simple_light() -> Box<dyn Hittable> {
     )));
 
     let difflight = Arc::new(DiffuseLight::new_color(Color::new(4.0, 4.0, 4.0)));
-    objects.add(Box::new(XyRect::new(3.0, 5.0, 1.0, 3.0, -2.0, difflight)));
+    objects.add(Box::new(XyRect::new(
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -2.0,
+        difflight.clone(),
+    )));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, 7.0, 0.0),
+        2.0,
+        difflight,
+    )));
 
     Box::new(objects)
 }
