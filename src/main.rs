@@ -16,6 +16,7 @@ use rand::Rng;
 use ray::Ray;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use texture::checker::CheckerTexture;
+use texture::noise::NoiseTexture;
 
 use crate::material::dielectric::Dielectric;
 use crate::{
@@ -35,6 +36,7 @@ mod camera;
 mod color;
 mod hittable;
 mod material;
+mod perlin;
 mod ray;
 mod texture;
 
@@ -214,6 +216,25 @@ fn two_spheres() -> Box<dyn Hittable> {
     Box::new(objects)
 }
 
+fn two_perlin_spheres() -> Box<dyn Hittable> {
+    let mut objects = HittableList::new();
+
+    let pertext = Arc::new(NoiseTexture::new());
+    let perlin_mat = Arc::new(Lambertian::new_tex(pertext));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        perlin_mat.clone(),
+    )));
+    objects.add(Box::new(Sphere::new(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        perlin_mat,
+    )));
+
+    Box::new(objects)
+}
+
 fn main() {
     const aspect_ratio: f64 = 16.0 / 9.0;
     const image_width: usize = 400;
@@ -243,7 +264,7 @@ fn main() {
             ),
             random_scene(),
         ),
-        _ => (
+        2 => (
             Camera::new(
                 lookfrom,
                 lookat,
@@ -256,6 +277,20 @@ fn main() {
                 1.0,
             ),
             two_spheres(),
+        ),
+        _ => (
+            Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                vfov,
+                aspect_ratio,
+                aperture,
+                dist_to_focus,
+                0.0,
+                1.0,
+            ),
+            two_perlin_spheres(),
         ),
     };
 
