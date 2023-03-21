@@ -90,4 +90,11 @@ impl Perlin {
 
         trilinear_interp(&c, u, v, w)
     }
+
+    pub fn turb(&self, p: Point3, depth: usize) -> f64 {
+        let (accum, _, _) = (0..depth).fold((0.0, p, 1.0), |(accum, p, weight), _| {
+            (accum + weight * self.noise(p), p * 2.0, weight * 0.5)
+        });
+        accum.abs()
+    }
 }
