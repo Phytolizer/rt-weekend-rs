@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use rand::Rng;
+
 use crate::aabb::Aabb;
 use crate::material::Material;
 use crate::ray::Ray;
@@ -120,6 +122,29 @@ impl Hittable for XzRect {
             Point3::new(self.x0, self.k - 0.0001, self.z0),
             Point3::new(self.x1, self.k + 0.0001, self.z1),
         ))
+    }
+
+    fn pdf_value(&self, o: Point3, v: Vec3) -> f64 {
+        let rec = match self.hit(&Ray::new(o, v, 0.0), 0.001, f64::INFINITY) {
+            Some(rec) => rec,
+            None => return 0.0,
+        };
+
+        let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+        let distance_squared = rec.t * rec.t * v.magnitude_squared();
+        let cosine = (v.dot(&rec.normal) / v.magnitude()).abs();
+
+        distance_squared / (cosine * area)
+    }
+
+    fn random(&self, o: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let random_point = Point3::new(
+            rng.gen_range(self.x0..self.x1),
+            self.k,
+            rng.gen_range(self.z0..self.z1),
+        );
+        random_point - o
     }
 }
 

@@ -2,8 +2,8 @@
 #![allow(dead_code)]
 #![allow(clippy::too_many_arguments)]
 
-use std::f64;
 use std::time::Instant;
+use std::{f64, sync::Arc};
 
 use clap::Parser;
 use color::write_color;
@@ -11,11 +11,17 @@ use hittable::Hittable;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use material::ScatterRecord;
+use pdf::cosine::CosinePdf;
+use pdf::mixture::MixturePdf;
+use pdf::{hittable::HittablePdf, Pdf};
 use rand::Rng;
 use ray::Ray;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::camera::Camera;
+use crate::hittable::aa_rect::XzRect;
+use crate::hittable::hittable_list::HittableList;
+use crate::material::lambertian::Lambertian;
 
 mod vec3;
 
@@ -29,6 +35,7 @@ mod color;
 mod hittable;
 mod material;
 mod onb;
+mod pdf;
 mod perlin;
 mod ray;
 mod texture;
@@ -81,23 +88,35 @@ fn random_vec_in_unit_disk() -> Vec3 {
     }
 }
 
-fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: usize) -> Color {
+fn ray_color(
+    r: &Ray,
+    background: Color,
+    world: &dyn Hittable,
+    lights: Arc<dyn Hittable>,
+    depth: usize,
+) -> Color {
     if depth == 0 {
         return Color::zeros();
     }
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        let emitted = rec.mat_ptr.emitted(rec.u, rec.v, rec.p);
+        let emitted = rec.mat_ptr.emitted(r, &rec, rec.u, rec.v, rec.p);
         if let Some(ScatterRecord {
             albedo,
             scattered,
             pdf,
         }) = rec.mat_ptr.scatter(r, &rec)
         {
+            let p0 = Arc::new(HittablePdf::new(lights.clone(), rec.p));
+            let p1 = Arc::new(CosinePdf::new(&rec.normal));
+            let mixed_pdf = MixturePdf::new(p0, p1);
+            let scattered = Ray::new(rec.p, mixed_pdf.generate(), r.time);
+            let pdf_val = mixed_pdf.value(scattered.direction);
             return emitted
                 + Vec3::from(
-                    (albedo * rec.mat_ptr.scattering_pdf(r, &rec, &scattered))
-                        .component_mul(&ray_color(&scattered, background, world, depth - 1)),
-                ) / pdf;
+                    (albedo * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)).component_mul(
+                        &ray_color(&scattered, background, world, lights, depth - 1),
+                    ),
+                ) / pdf_val;
         }
         return emitted;
     }
@@ -145,6 +164,7 @@ fn main() {
 
     let mut background = Color::new(0.0, 0.0, 0.0);
     let mut samples_per_pixel = 100;
+    let mut lights: Arc<dyn Hittable> = Arc::new(HittableList::new());
 
     let options = Options::parse();
 
@@ -239,10 +259,18 @@ fn main() {
         6 => {
             aspect_ratio = 1.0;
             image_width = 600;
-            samples_per_pixel = 200;
+            samples_per_pixel = 1000;
             let lookfrom = Point3::new(278.0, 278.0, -800.0);
             let lookat = Point3::new(278.0, 278.0, 0.0);
             let vfov = 40.0;
+            lights = Arc::new(XzRect::new(
+                213.0,
+                343.0,
+                227.0,
+                332.0,
+                554.0,
+                Arc::new(Lambertian::new_color(Color::new(0.0, 0.0, 0.0))),
+            ));
             (
                 Camera::new(
                     lookfrom,
@@ -353,7 +381,7 @@ fn main() {
                     let v = (j as f64 + rand::thread_rng().gen_range(0.0..1.0))
                         / (image_height - 1) as f64;
                     let r = camera.get_ray(u, v);
-                    pixel_color += ray_color(&r, background, world.as_ref(), max_depth);
+                    pixel_color += ray_color(&r, background, world.as_ref(), lights.clone(), max_depth);
                 }
                 tx.send((i, image_height - j - 1, pixel_color)).unwrap();
             }

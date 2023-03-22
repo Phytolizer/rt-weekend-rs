@@ -5,6 +5,7 @@ use crate::ray::Ray;
 use crate::texture::solid_color::SolidColor;
 use crate::texture::Texture;
 use crate::Color;
+use crate::Point3;
 
 use super::Material;
 use super::ScatterRecord;
@@ -28,7 +29,11 @@ impl Material for DiffuseLight {
         None
     }
 
-    fn emitted(&self, u: f64, v: f64, p: crate::Point3) -> Color {
-        self.emit.value(u, v, p)
+    fn emitted(&self, _r_in: &Ray, rec: &HitRecord, u: f64, v: f64, p: Point3) -> Color {
+        if rec.front_face {
+            self.emit.value(u, v, p)
+        } else {
+            Color::zeros()
+        }
     }
 }

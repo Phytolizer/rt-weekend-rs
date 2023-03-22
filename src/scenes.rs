@@ -7,6 +7,7 @@ use rand::Rng;
 use crate::hittable::aa_rect::{XyRect, XzRect, YzRect};
 use crate::hittable::box_obj::BoxObj;
 use crate::hittable::bvh_node::BvhNode;
+use crate::hittable::flip_face::FlipFace;
 use crate::hittable::hittable_list::HittableList;
 use crate::hittable::medium::constant::ConstantMedium;
 use crate::hittable::moving_sphere::MovingSphere;
@@ -204,9 +205,9 @@ pub fn cornell_box() -> Box<dyn Hittable> {
 
     objects.add(Arc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
     objects.add(Arc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
-    objects.add(Arc::new(XzRect::new(
+    objects.add(Arc::new(FlipFace::new(Box::new(XzRect::new(
         213.0, 343.0, 227.0, 332.0, 554.0, light,
-    )));
+    )))));
     objects.add(Arc::new(XzRect::new(
         0.0,
         555.0,
