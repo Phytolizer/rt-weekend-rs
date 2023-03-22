@@ -1,5 +1,6 @@
 #![allow(non_upper_case_globals)]
 #![allow(dead_code)]
+#![allow(clippy::too_many_arguments)]
 
 use std::f64;
 use std::time::Instant;
@@ -27,6 +28,7 @@ mod camera;
 mod color;
 mod hittable;
 mod material;
+mod onb;
 mod perlin;
 mod ray;
 mod texture;
@@ -53,8 +55,17 @@ fn random_vec_in_unit_sphere() -> Vec3 {
     }
 }
 
+fn random_vec_in_hemisphere(normal: &Vec3) -> Vec3 {
+    let in_unit_sphere = random_vec_in_unit_sphere();
+    if in_unit_sphere.dot(normal) > 0.0 {
+        in_unit_sphere
+    } else {
+        -in_unit_sphere
+    }
+}
+
 fn random_unit_vector() -> Vec3 {
-    random_vec_in_unit_sphere().normalize().into()
+    random_vec_in_unit_sphere().normalize()
 }
 
 fn random_vec_in_unit_disk() -> Vec3 {
@@ -77,14 +88,16 @@ fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: usize) -> 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
         let emitted = rec.mat_ptr.emitted(rec.u, rec.v, rec.p);
         if let Some(ScatterRecord {
-            attenuation,
+            albedo,
             scattered,
+            pdf,
         }) = rec.mat_ptr.scatter(r, &rec)
         {
             return emitted
-                + attenuation
-                    .component_mul(&ray_color(&scattered, background, world, depth - 1))
-                    .into();
+                + Vec3::from(
+                    (albedo * rec.mat_ptr.scattering_pdf(r, &rec, &scattered))
+                        .component_mul(&ray_color(&scattered, background, world, depth - 1)),
+                ) / pdf;
         }
         return emitted;
     }
@@ -365,9 +378,8 @@ fn main() {
             texture.update(None, &img, image_width * 3).unwrap();
             'sdl_loop: loop {
                 for event in state.event_pump.poll_iter() {
-                    match event {
-                        sdl2::event::Event::Quit { .. } => break 'sdl_loop,
-                        _ => {}
+                    if let sdl2::event::Event::Quit { .. } = event {
+                        break 'sdl_loop;
                     }
                 }
                 state.canvas.copy(&texture, None, None).unwrap();

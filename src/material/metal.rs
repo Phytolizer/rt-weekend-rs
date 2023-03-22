@@ -27,8 +27,9 @@ impl Material for Metal {
 
         if scattered.direction.dot(&rec.normal) > 0.0 {
             Some(ScatterRecord {
-                attenuation,
+                albedo: attenuation,
                 scattered,
+                pdf: 0.0,
             })
         } else {
             None

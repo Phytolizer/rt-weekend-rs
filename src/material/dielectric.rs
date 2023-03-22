@@ -47,8 +47,9 @@ impl Material for Dielectric {
 
         let scattered = Ray::new(rec.p, direction, ray.time);
         Some(ScatterRecord {
-            attenuation,
+            albedo: attenuation,
             scattered,
+            pdf: 0.0,
         })
     }
 }
