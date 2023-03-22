@@ -67,7 +67,7 @@ impl Hittable for BvhNode {
             t_min,
             hit_left.as_ref().map(|rec| rec.t).unwrap_or(t_max),
         );
-        hit_left.or(hit_right)
+        hit_right.or(hit_left)
     }
 
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {

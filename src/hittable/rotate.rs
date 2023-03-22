@@ -46,7 +46,7 @@ impl RotateY {
         }
 
         Self {
-            bbox,
+            bbox: bbox.map(|_| Aabb::new(min, max)),
             ptr,
             sin_theta,
             cos_theta,
