@@ -11,14 +11,14 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
+        Self { albedo }
+    }
+
+    pub fn new_color(albedo: Color) -> Self {
         Self {
             albedo: Arc::new(SolidColor::new(albedo)),
         }
-    }
-
-    pub fn new_tex(albedo: Arc<dyn Texture>) -> Self {
-        Self { albedo }
     }
 }
 

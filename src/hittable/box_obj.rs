@@ -22,7 +22,7 @@ impl BoxObj {
     pub fn new(min: Point3, max: Point3, mat_ptr: Arc<dyn Material>) -> Self {
         let mut sides = HittableList::new();
 
-        sides.add(Box::new(XyRect::new(
+        sides.add(Arc::new(XyRect::new(
             min.x,
             max.x,
             min.y,
@@ -30,7 +30,7 @@ impl BoxObj {
             max.z,
             mat_ptr.clone(),
         )));
-        sides.add(Box::new(XyRect::new(
+        sides.add(Arc::new(XyRect::new(
             min.x,
             max.x,
             min.y,
@@ -39,7 +39,7 @@ impl BoxObj {
             mat_ptr.clone(),
         )));
 
-        sides.add(Box::new(XzRect::new(
+        sides.add(Arc::new(XzRect::new(
             min.x,
             max.x,
             min.z,
@@ -47,7 +47,7 @@ impl BoxObj {
             max.y,
             mat_ptr.clone(),
         )));
-        sides.add(Box::new(XzRect::new(
+        sides.add(Arc::new(XzRect::new(
             min.x,
             max.x,
             min.z,
@@ -56,7 +56,7 @@ impl BoxObj {
             mat_ptr.clone(),
         )));
 
-        sides.add(Box::new(YzRect::new(
+        sides.add(Arc::new(YzRect::new(
             min.y,
             max.y,
             min.z,
@@ -64,7 +64,7 @@ impl BoxObj {
             max.x,
             mat_ptr.clone(),
         )));
-        sides.add(Box::new(YzRect::new(
+        sides.add(Arc::new(YzRect::new(
             min.y,
             max.y,
             min.z,

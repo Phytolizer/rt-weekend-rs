@@ -1,9 +1,11 @@
+use std::sync::Arc;
+
 use crate::aabb::Aabb;
 
 use super::{HitRecord, Hittable};
 
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    objects: Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -13,8 +15,12 @@ impl HittableList {
         }
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
+    }
+
+    pub(crate) fn children(&self) -> &[Arc<dyn Hittable>] {
+        self.objects.as_slice()
     }
 }
 

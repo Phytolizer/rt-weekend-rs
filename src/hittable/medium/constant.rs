@@ -14,13 +14,13 @@ use crate::vec3::Vec3;
 use crate::Color;
 
 pub struct ConstantMedium {
-    boundary: Box<dyn Hittable>,
+    boundary: Arc<dyn Hittable>,
     phase_function: Arc<dyn Material>,
     neg_inv_density: f64,
 }
 
 impl ConstantMedium {
-    pub fn new(boundary: Box<dyn Hittable>, density: f64, albedo: Arc<dyn Texture>) -> Self {
+    pub fn new(boundary: Arc<dyn Hittable>, density: f64, albedo: Arc<dyn Texture>) -> Self {
         Self {
             boundary,
             neg_inv_density: -1.0 / density,
@@ -28,7 +28,7 @@ impl ConstantMedium {
         }
     }
 
-    pub fn new_color(boundary: Box<dyn Hittable>, density: f64, color: Color) -> Self {
+    pub fn new_color(boundary: Arc<dyn Hittable>, density: f64, color: Color) -> Self {
         Self {
             boundary,
             neg_inv_density: -1.0 / density,
