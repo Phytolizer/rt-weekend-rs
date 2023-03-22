@@ -20,6 +20,7 @@ use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use crate::camera::Camera;
 use crate::hittable::aa_rect::XzRect;
 use crate::hittable::hittable_list::HittableList;
+use crate::hittable::sphere::Sphere;
 use crate::material::lambertian::Lambertian;
 
 mod vec3;
@@ -281,14 +282,21 @@ fn main() {
             let lookfrom = Point3::new(278.0, 278.0, -800.0);
             let lookat = Point3::new(278.0, 278.0, 0.0);
             let vfov = 40.0;
-            lights = Arc::new(XzRect::new(
+            let mut light_list = HittableList::new();
+            light_list.add(Arc::new(XzRect::new(
                 213.0,
                 343.0,
                 227.0,
                 332.0,
                 554.0,
                 Arc::new(Lambertian::new_color(Color::new(0.0, 0.0, 0.0))),
-            ));
+            )));
+            light_list.add(Arc::new(Sphere::new(
+                Point3::new(190.0, 90.0, 190.0),
+                90.0,
+                Arc::new(Lambertian::new_color(Color::zeros())),
+            )));
+            lights = Arc::new(light_list);
             (
                 Camera::new(
                     lookfrom,

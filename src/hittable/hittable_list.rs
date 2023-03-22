@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
-use crate::aabb::Aabb;
+use crate::{aabb::Aabb, vec3::Vec3, Point3};
 
 use super::{HitRecord, Hittable};
+
+use rand::seq::SliceRandom;
 
 pub struct HittableList {
     objects: Vec<Arc<dyn Hittable>>,
@@ -49,5 +51,20 @@ impl Hittable for HittableList {
         }
 
         temp_box
+    }
+
+    fn pdf_value(&self, o: Point3, v: Vec3) -> f64 {
+        self.objects
+            .iter()
+            .map(|obj| obj.pdf_value(o, v))
+            .sum::<f64>()
+            / self.objects.len() as f64
+    }
+
+    fn random(&self, o: Vec3) -> Vec3 {
+        self.objects
+            .choose(&mut rand::thread_rng())
+            .map(|obj| obj.random(o))
+            .unwrap_or(Vec3::zeros())
     }
 }
