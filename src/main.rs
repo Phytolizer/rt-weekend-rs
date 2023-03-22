@@ -100,7 +100,7 @@ struct Options {
     #[clap(
         short,
         long,
-        value_parser(clap::value_parser!(u64).range(1..8)),
+        value_parser(clap::value_parser!(u64).range(1..=8)),
         default_value_t = 8
     )]
     scene: u64,
