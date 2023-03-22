@@ -9,6 +9,7 @@ use crate::Color;
 
 use super::Material;
 use super::ScatterRecord;
+use super::ScatterType;
 
 pub struct Isotropic {
     albedo: Arc<dyn Texture>,
@@ -27,9 +28,12 @@ impl Isotropic {
 impl Material for Isotropic {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         Some(ScatterRecord {
-            albedo: self.albedo.value(rec.u, rec.v, rec.p),
-            scattered: Ray::new(rec.p, random_vec_in_unit_sphere(), ray.time),
-            pdf: 0.0,
+            attenuation: self.albedo.value(rec.u, rec.v, rec.p),
+            scattered: ScatterType::Specular(Ray::new(
+                rec.p,
+                random_vec_in_unit_sphere(),
+                ray.time,
+            )),
         })
     }
 }

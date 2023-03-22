@@ -3,13 +3,13 @@ use std::sync::Arc;
 
 use rand::Rng;
 
-use crate::onb::Onb;
+use crate::pdf::cosine::CosinePdf;
 use crate::texture::solid_color::SolidColor;
 use crate::texture::Texture;
 use crate::vec3::Vec3;
 use crate::{hittable::HitRecord, ray::Ray, Color};
 
-use super::{Material, ScatterRecord};
+use super::{Material, ScatterRecord, ScatterType};
 
 pub struct Lambertian {
     albedo: Arc<dyn Texture>,
@@ -40,17 +40,10 @@ fn random_cosine_direction() -> Vec3 {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
-        let uvw = Onb::from_w(&rec.normal);
-        let direction = uvw.local(random_cosine_direction());
-        let scattered = Ray::new(rec.p, direction.normalize(), ray.time);
-        let albedo = self.albedo.value(rec.u, rec.v, rec.p);
-        let pdf = uvw.w().dot(&scattered.direction) / f64::consts::PI;
-
+    fn scatter(&self, _ray: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         Some(ScatterRecord {
-            albedo,
-            scattered,
-            pdf,
+            attenuation: self.albedo.value(rec.u, rec.v, rec.p),
+            scattered: ScatterType::Diffuse(Arc::new(CosinePdf::new(&rec.normal))),
         })
     }
 

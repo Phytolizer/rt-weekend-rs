@@ -10,8 +10,7 @@ use color::write_color;
 use hittable::Hittable;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
-use material::ScatterRecord;
-use pdf::cosine::CosinePdf;
+use material::{ScatterRecord, ScatterType};
 use pdf::mixture::MixturePdf;
 use pdf::{hittable::HittablePdf, Pdf};
 use rand::Rng;
@@ -101,22 +100,41 @@ fn ray_color(
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
         let emitted = rec.mat_ptr.emitted(r, &rec, rec.u, rec.v, rec.p);
         if let Some(ScatterRecord {
-            albedo,
+            attenuation,
             scattered,
-            pdf,
         }) = rec.mat_ptr.scatter(r, &rec)
         {
-            let p0 = Arc::new(HittablePdf::new(lights.clone(), rec.p));
-            let p1 = Arc::new(CosinePdf::new(&rec.normal));
-            let mixed_pdf = MixturePdf::new(p0, p1);
-            let scattered = Ray::new(rec.p, mixed_pdf.generate(), r.time);
-            let pdf_val = mixed_pdf.value(scattered.direction);
-            return emitted
-                + Vec3::from(
-                    (albedo * rec.mat_ptr.scattering_pdf(r, &rec, &scattered)).component_mul(
-                        &ray_color(&scattered, background, world, lights, depth - 1),
-                    ),
-                ) / pdf_val;
+            match scattered {
+                ScatterType::Diffuse(pdf) => {
+                    let light_ptr = Arc::new(HittablePdf::new(lights.clone(), rec.p));
+                    let p = MixturePdf::new(light_ptr, pdf);
+
+                    let scattered = Ray::new(rec.p, p.generate(), r.time);
+                    let pdf_val = p.value(scattered.direction);
+                    return emitted
+                        + Vec3::from(
+                            (attenuation * rec.mat_ptr.scattering_pdf(r, &rec, &scattered))
+                                .component_mul(&ray_color(
+                                    &scattered,
+                                    background,
+                                    world,
+                                    lights,
+                                    depth - 1,
+                                )),
+                        ) / pdf_val;
+                }
+                ScatterType::Specular(specular_ray) => {
+                    return attenuation
+                        .component_mul(&ray_color(
+                            &specular_ray,
+                            background,
+                            world,
+                            lights,
+                            depth - 1,
+                        ))
+                        .into();
+                }
+            }
         }
         return emitted;
     }

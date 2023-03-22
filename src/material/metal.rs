@@ -1,7 +1,7 @@
 use crate::random_vec_in_unit_sphere;
 use crate::{hittable::HitRecord, ray::Ray, Color};
 
-use super::{Material, ScatterRecord};
+use super::{Material, ScatterRecord, ScatterType};
 
 pub struct Metal {
     albedo: Color,
@@ -15,24 +15,16 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
-        let reflected = ray.direction.normalize().reflect(&rec.normal);
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
+        let reflected = r_in.direction.normalize().reflect(&rec.normal);
 
-        let scattered = Ray::new(
-            rec.p,
-            reflected + self.fuzz * random_vec_in_unit_sphere(),
-            ray.time,
-        );
-        let attenuation = self.albedo;
-
-        if scattered.direction.dot(&rec.normal) > 0.0 {
-            Some(ScatterRecord {
-                albedo: attenuation,
-                scattered,
-                pdf: 0.0,
-            })
-        } else {
-            None
-        }
+        Some(ScatterRecord {
+            attenuation: self.albedo,
+            scattered: ScatterType::Specular(Ray::new(
+                rec.p,
+                reflected + self.fuzz * random_vec_in_unit_sphere(),
+                0.0,
+            )),
+        })
     }
 }
