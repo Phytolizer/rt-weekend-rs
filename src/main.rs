@@ -93,8 +93,12 @@ fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: usize) -> 
 
 #[derive(Debug, clap::Parser)]
 struct Options {
+    /// Whether to render to a temporary window or to `output.png`.
     #[clap(short, long)]
     live: bool,
+    /// The scene to render (1-8).
+    #[clap(short, long, value_parser(clap::value_parser!(u64).range(1..8)), default_value_t = 8)]
+    scene: u64,
 }
 
 struct SdlState {
@@ -124,7 +128,9 @@ fn main() {
     let mut background = Color::new(0.0, 0.0, 0.0);
     let mut samples_per_pixel = 100;
 
-    let (camera, world) = match 0 {
+    let options = Options::parse();
+
+    let (camera, world) = match options.scene {
         1 => {
             background = Color::new(0.7, 0.8, 1.0);
             (
@@ -256,7 +262,7 @@ fn main() {
                 scenes::cornell_smoke(),
             )
         }
-        _ => {
+        8 => {
             aspect_ratio = 1.0;
             image_width = 800;
             samples_per_pixel = 10000;
@@ -278,11 +284,11 @@ fn main() {
                 scenes::final_scene(),
             )
         }
+        _ => unreachable!(),
     };
 
     let image_height = (image_width as f64 / aspect_ratio) as usize;
 
-    let options = Options::parse();
     let state = if options.live {
         let sdl = sdl2::init().unwrap();
         let video = sdl.video().unwrap();
