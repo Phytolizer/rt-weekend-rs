@@ -13,7 +13,7 @@ impl FlipFace {
 }
 
 impl Hittable for FlipFace {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let rec = self.ptr.hit(ray, t_min, t_max)?;
 
         Some(HitRecord {
@@ -27,7 +27,7 @@ impl Hittable for FlipFace {
         })
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, time0: f32, time1: f32) -> Option<Aabb> {
         self.ptr.bounding_box(time0, time1)
     }
 }

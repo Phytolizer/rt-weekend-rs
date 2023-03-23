@@ -1,10 +1,10 @@
 use std::ops::{Add, AddAssign, Deref, DerefMut, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Clone, Copy)]
-pub struct Vec3(nalgebra::Vector3<f64>);
+pub struct Vec3(nalgebra::Vector3<f32>);
 
 impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self(nalgebra::Vector3::new(x, y, z))
     }
 
@@ -13,7 +13,7 @@ impl Vec3 {
     }
 
     pub fn near_zero(&self) -> bool {
-        const s: f64 = 1e-8;
+        const s: f32 = 1e-8;
         self.0.x.abs() < s && self.0.y.abs() < s && self.0.z.abs() < s
     }
 
@@ -25,7 +25,7 @@ impl Vec3 {
         *self - 2.0 * self.dot(normal) * *normal
     }
 
-    pub fn refract(&self, normal: &Self, etai_over_etat: f64) -> Self {
+    pub fn refract(&self, normal: &Self, etai_over_etat: f32) -> Self {
         let cos_theta = (-*self).dot(normal).min(1.0);
         let r_out_perp = etai_over_etat * (*self + cos_theta * *normal);
         let r_out_parallel = -(1.0 - r_out_perp.norm_squared()).abs().sqrt() * *normal;
@@ -34,7 +34,7 @@ impl Vec3 {
 }
 
 impl Deref for Vec3 {
-    type Target = nalgebra::Vector3<f64>;
+    type Target = nalgebra::Vector3<f32>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -69,23 +69,23 @@ impl Sub for Vec3 {
     }
 }
 
-impl Div<f64> for Vec3 {
+impl Div<f32> for Vec3 {
     type Output = Self;
 
-    fn div(self, rhs: f64) -> Self::Output {
+    fn div(self, rhs: f32) -> Self::Output {
         Self(self.0 / rhs)
     }
 }
 
-impl Mul<f64> for Vec3 {
+impl Mul<f32> for Vec3 {
     type Output = Self;
 
-    fn mul(self, rhs: f64) -> Self::Output {
+    fn mul(self, rhs: f32) -> Self::Output {
         Self(self.0 * rhs)
     }
 }
 
-impl Mul<Vec3> for f64 {
+impl Mul<Vec3> for f32 {
     type Output = Vec3;
 
     fn mul(self, rhs: Vec3) -> Self::Output {
@@ -101,8 +101,14 @@ impl Neg for Vec3 {
     }
 }
 
-impl From<nalgebra::Vector3<f64>> for Vec3 {
-    fn from(v: nalgebra::Vector3<f64>) -> Self {
+impl From<nalgebra::Vector3<f32>> for Vec3 {
+    fn from(v: nalgebra::Vector3<f32>) -> Self {
         Self(v)
+    }
+}
+
+impl PartialEq for Vec3 {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
     }
 }

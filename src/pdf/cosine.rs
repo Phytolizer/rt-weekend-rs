@@ -1,4 +1,4 @@
-use std::f64;
+use std::f32;
 
 use rand::Rng;
 
@@ -7,11 +7,11 @@ use crate::{onb::Onb, vec3::Vec3};
 use super::Pdf;
 
 fn random_cosine_direction() -> Vec3 {
-    let r1 = rand::thread_rng().gen_range(0.0f64..1.0);
-    let r2 = rand::thread_rng().gen_range(0.0f64..1.0);
+    let r1 = rand::thread_rng().gen_range(0.0f32..1.0);
+    let r2 = rand::thread_rng().gen_range(0.0f32..1.0);
     let z = (1.0 - r2).sqrt();
 
-    let phi = 2.0 * f64::consts::PI * r1;
+    let phi = 2.0 * f32::consts::PI * r1;
     let x = phi.cos() * r2.sqrt();
     let y = phi.sin() * r2.sqrt();
 
@@ -31,12 +31,12 @@ impl CosinePdf {
 }
 
 impl Pdf for CosinePdf {
-    fn value(&self, direction: Vec3) -> f64 {
+    fn value(&self, direction: Vec3) -> f32 {
         let cosine = direction.normalize().dot(&self.uvw.w());
         if cosine < 0.0 {
             0.0
         } else {
-            cosine / f64::consts::PI
+            cosine / f32::consts::PI
         }
     }
 

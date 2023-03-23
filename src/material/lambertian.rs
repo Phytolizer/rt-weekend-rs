@@ -1,4 +1,4 @@
-use std::f64;
+use std::f32;
 use std::sync::Arc;
 
 use rand::Rng;
@@ -28,11 +28,11 @@ impl Lambertian {
 }
 
 fn random_cosine_direction() -> Vec3 {
-    let r1 = rand::thread_rng().gen_range(0.0f64..1.0);
-    let r2 = rand::thread_rng().gen_range(0.0f64..1.0);
+    let r1 = rand::thread_rng().gen_range(0.0f32..1.0);
+    let r2 = rand::thread_rng().gen_range(0.0f32..1.0);
     let z = (1.0 - r2).sqrt();
 
-    let phi = 2.0 * f64::consts::PI * r1;
+    let phi = 2.0 * f32::consts::PI * r1;
     let x = phi.cos() * r2.sqrt();
     let y = phi.sin() * r2.sqrt();
 
@@ -47,12 +47,12 @@ impl Material for Lambertian {
         })
     }
 
-    fn scattering_pdf(&self, _r_in: &Ray, rec: &HitRecord, scattered: &Ray) -> f64 {
+    fn scattering_pdf(&self, _r_in: &Ray, rec: &HitRecord, scattered: &Ray) -> f32 {
         let cosine = rec.normal.dot(&scattered.direction.normalize());
         if cosine < 0.0 {
             0.0
         } else {
-            cosine / f64::consts::PI
+            cosine / f32::consts::PI
         }
     }
 }

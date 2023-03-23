@@ -27,7 +27,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray: &crate::ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &crate::ray::Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut temp_rec = None;
         let mut closest_so_far = t_max;
 
@@ -41,7 +41,7 @@ impl Hittable for HittableList {
         temp_rec
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, time0: f32, time1: f32) -> Option<Aabb> {
         let mut temp_box = None;
 
         for object in &self.objects {
@@ -53,12 +53,12 @@ impl Hittable for HittableList {
         temp_box
     }
 
-    fn pdf_value(&self, o: Point3, v: Vec3) -> f64 {
+    fn pdf_value(&self, o: Point3, v: Vec3) -> f32 {
         self.objects
             .iter()
             .map(|obj| obj.pdf_value(o, v))
-            .sum::<f64>()
-            / self.objects.len() as f64
+            .sum::<f32>()
+            / self.objects.len() as f32
     }
 
     fn random(&self, o: Vec3) -> Vec3 {

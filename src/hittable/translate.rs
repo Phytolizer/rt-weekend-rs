@@ -17,7 +17,7 @@ impl Translate {
 }
 
 impl Hittable for Translate {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let moved_r = Ray::new(ray.origin - self.offset, ray.direction, ray.time);
         let rec = self.ptr.hit(&moved_r, t_min, t_max)?;
 
@@ -32,7 +32,7 @@ impl Hittable for Translate {
         ))
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, time0: f32, time1: f32) -> Option<Aabb> {
         let out_box = self.ptr.bounding_box(time0, time1)?;
 
         Some(Aabb::new(

@@ -29,7 +29,7 @@ fn permute(p: &mut [isize]) {
     }
 }
 
-fn trilinear_interp(c: &[[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+fn trilinear_interp(c: &[[[Vec3; 2]; 2]; 2], u: f32, v: f32, w: f32) -> f32 {
     let uu = u * u * (3.0 - 2.0 * u);
     let vv = v * v * (3.0 - 2.0 * v);
     let ww = w * w * (3.0 - 2.0 * w);
@@ -38,10 +38,10 @@ fn trilinear_interp(c: &[[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     for i in 0isize..2 {
         for j in 0isize..2 {
             for k in 0isize..2 {
-                let weight_v = Vec3::new(u - i as f64, v - j as f64, w - k as f64);
-                accum += (i as f64 * uu + ((1 - i) as f64) * (1.0 - uu))
-                    * (j as f64 * vv + ((1 - j) as f64) * (1.0 - vv))
-                    * (k as f64 * ww + ((1 - k) as f64) * (1.0 - ww))
+                let weight_v = Vec3::new(u - i as f32, v - j as f32, w - k as f32);
+                accum += (i as f32 * uu + ((1 - i) as f32) * (1.0 - uu))
+                    * (j as f32 * vv + ((1 - j) as f32) * (1.0 - vv))
+                    * (k as f32 * ww + ((1 - k) as f32) * (1.0 - ww))
                     * c[i as usize][j as usize][k as usize].dot(&weight_v);
             }
         }
@@ -68,7 +68,7 @@ impl Perlin {
         }
     }
 
-    pub fn noise(&self, p: Point3) -> f64 {
+    pub fn noise(&self, p: Point3) -> f32 {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();
         let w = p.z - p.z.floor();
@@ -93,7 +93,7 @@ impl Perlin {
         trilinear_interp(&c, u, v, w)
     }
 
-    pub fn turb(&self, p: Point3, depth: usize) -> f64 {
+    pub fn turb(&self, p: Point3, depth: usize) -> f32 {
         let (accum, _, _) = (0..depth).fold((0.0, p, 1.0), |(accum, p, weight), _| {
             (accum + weight * self.noise(p), p * 2.0, weight * 0.5)
         });

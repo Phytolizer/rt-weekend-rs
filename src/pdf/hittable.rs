@@ -16,7 +16,7 @@ impl HittablePdf {
 }
 
 impl Pdf for HittablePdf {
-    fn value(&self, direction: Vec3) -> f64 {
+    fn value(&self, direction: Vec3) -> f32 {
         self.ptr.pdf_value(self.origin, direction)
     }
 

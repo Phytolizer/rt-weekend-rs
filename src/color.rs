@@ -22,7 +22,7 @@ pub fn write_color(
         b = 0.0;
     }
 
-    let scale = 1.0 / samples_per_pixel as f64;
+    let scale = 1.0 / samples_per_pixel as f32;
 
     r = (scale * r).sqrt();
     g = (scale * g).sqrt();

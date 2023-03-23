@@ -12,7 +12,7 @@ impl SolidColor {
         Self { color_value }
     }
 
-    pub fn new_rgb(red: f64, green: f64, blue: f64) -> Self {
+    pub fn new_rgb(red: f32, green: f32, blue: f32) -> Self {
         Self {
             color_value: Color::new(red, green, blue),
         }
@@ -20,7 +20,7 @@ impl SolidColor {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, _u: f64, _v: f64, _p: Point3) -> Color {
+    fn value(&self, _u: f32, _v: f32, _p: Point3) -> Color {
         self.color_value
     }
 }

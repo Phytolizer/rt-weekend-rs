@@ -13,15 +13,15 @@ use super::Hittable;
 
 pub struct XyRect {
     mp: Arc<dyn Material>,
-    x0: f64,
-    x1: f64,
-    y0: f64,
-    y1: f64,
-    k: f64,
+    x0: f32,
+    x1: f32,
+    y0: f32,
+    y1: f32,
+    k: f32,
 }
 
 impl XyRect {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, mp: Arc<dyn Material>) -> Self {
+    pub fn new(x0: f32, x1: f32, y0: f32, y1: f32, k: f32, mp: Arc<dyn Material>) -> Self {
         Self {
             mp,
             x0,
@@ -34,7 +34,7 @@ impl XyRect {
 }
 
 impl Hittable for XyRect {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - ray.origin.z) / ray.direction.z;
         if !(t_min..t_max).contains(&t) {
             return None;
@@ -60,7 +60,7 @@ impl Hittable for XyRect {
         ))
     }
 
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _time0: f32, _time1: f32) -> Option<Aabb> {
         Some(Aabb::new(
             Point3::new(self.x0, self.y0, self.k - 0.0001),
             Point3::new(self.x1, self.y1, self.k + 0.0001),
@@ -70,15 +70,15 @@ impl Hittable for XyRect {
 
 pub struct XzRect {
     mp: Arc<dyn Material>,
-    x0: f64,
-    x1: f64,
-    z0: f64,
-    z1: f64,
-    k: f64,
+    x0: f32,
+    x1: f32,
+    z0: f32,
+    z1: f32,
+    k: f32,
 }
 
 impl XzRect {
-    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, mp: Arc<dyn Material>) -> Self {
+    pub fn new(x0: f32, x1: f32, z0: f32, z1: f32, k: f32, mp: Arc<dyn Material>) -> Self {
         Self {
             mp,
             x0,
@@ -91,7 +91,7 @@ impl XzRect {
 }
 
 impl Hittable for XzRect {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - ray.origin.y) / ray.direction.y;
         if !(t_min..t_max).contains(&t) {
             return None;
@@ -117,15 +117,15 @@ impl Hittable for XzRect {
         ))
     }
 
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _time0: f32, _time1: f32) -> Option<Aabb> {
         Some(Aabb::new(
             Point3::new(self.x0, self.k - 0.0001, self.z0),
             Point3::new(self.x1, self.k + 0.0001, self.z1),
         ))
     }
 
-    fn pdf_value(&self, o: Point3, v: Vec3) -> f64 {
-        let rec = match self.hit(&Ray::new(o, v, 0.0), 0.001, f64::INFINITY) {
+    fn pdf_value(&self, o: Point3, v: Vec3) -> f32 {
+        let rec = match self.hit(&Ray::new(o, v, 0.0), 0.001, f32::INFINITY) {
             Some(rec) => rec,
             None => return 0.0,
         };
@@ -150,15 +150,15 @@ impl Hittable for XzRect {
 
 pub struct YzRect {
     mp: Arc<dyn Material>,
-    y0: f64,
-    y1: f64,
-    z0: f64,
-    z1: f64,
-    k: f64,
+    y0: f32,
+    y1: f32,
+    z0: f32,
+    z1: f32,
+    k: f32,
 }
 
 impl YzRect {
-    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, mp: Arc<dyn Material>) -> Self {
+    pub fn new(y0: f32, y1: f32, z0: f32, z1: f32, k: f32, mp: Arc<dyn Material>) -> Self {
         Self {
             mp,
             y0,
@@ -171,7 +171,7 @@ impl YzRect {
 }
 
 impl Hittable for YzRect {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - ray.origin.x) / ray.direction.x;
         if !(t_min..t_max).contains(&t) {
             return None;
@@ -197,7 +197,7 @@ impl Hittable for YzRect {
         ))
     }
 
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _time0: f32, _time1: f32) -> Option<Aabb> {
         Some(Aabb::new(
             Point3::new(self.k - 0.0001, self.y0, self.z0),
             Point3::new(self.k + 0.0001, self.y1, self.z1),

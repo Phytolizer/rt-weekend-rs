@@ -43,9 +43,9 @@ pub fn random_scene() -> Box<dyn Hittable> {
         for b in -11..11 {
             let choose_mat = rand::thread_rng().gen_range(0.0..1.0);
             let center = Point3::new(
-                a as f64 + 0.9 * rand::thread_rng().gen_range(0.0..1.0),
+                a as f32 + 0.9 * rand::thread_rng().gen_range(0.0..1.0),
                 0.2,
-                b as f64 + 0.9 * rand::thread_rng().gen_range(0.0..1.0),
+                b as f32 + 0.9 * rand::thread_rng().gen_range(0.0..1.0),
             );
 
             if (center - Vec3::new(4.0, 0.2, 0.0)).magnitude() > 0.9 {
@@ -255,9 +255,9 @@ pub fn cornell_smoke() -> Box<dyn Hittable> {
 
     objects.add(Arc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
     objects.add(Arc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
-    objects.add(Arc::new(XzRect::new(
+    objects.add(Arc::new(FlipFace::new(Box::new(XzRect::new(
         113.0, 443.0, 127.0, 432.0, 554.0, light,
-    )));
+    )))));
     objects.add(Arc::new(XzRect::new(
         0.0,
         555.0,
@@ -319,8 +319,8 @@ pub fn final_scene() -> Box<dyn Hittable> {
         .cartesian_product(0..boxes_per_side)
         .for_each(|(i, j)| {
             let w = 100.0;
-            let x0 = -1000.0 + i as f64 * w;
-            let z0 = -1000.0 + j as f64 * w;
+            let x0 = -1000.0 + i as f32 * w;
+            let z0 = -1000.0 + j as f32 * w;
             let y0 = 0.0;
             let x1 = x0 + w;
             let y1 = rand::thread_rng().gen_range(1.0..101.0);
@@ -337,9 +337,9 @@ pub fn final_scene() -> Box<dyn Hittable> {
     objects.add(Arc::new(BvhNode::new(boxes1.children(), 0.0, 1.0)));
 
     let light = Arc::new(DiffuseLight::new_color(Color::new(7.0, 7.0, 7.0)));
-    objects.add(Arc::new(XzRect::new(
+    objects.add(Arc::new(FlipFace::new(Box::new(XzRect::new(
         123.0, 423.0, 147.0, 412.0, 554.0, light,
-    )));
+    )))));
 
     let center1 = Point3::new(400.0, 400.0, 200.0);
     let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);

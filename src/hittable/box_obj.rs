@@ -78,11 +78,11 @@ impl BoxObj {
 }
 
 impl Hittable for BoxObj {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         self.sides.hit(ray, t_min, t_max)
     }
 
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _time0: f32, _time1: f32) -> Option<Aabb> {
         Some(Aabb::new(self.min, self.max))
     }
 }

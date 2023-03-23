@@ -13,9 +13,9 @@ use super::Hittable;
 pub struct MovingSphere {
     center0: Point3,
     center1: Point3,
-    time0: f64,
-    time1: f64,
-    radius: f64,
+    time0: f32,
+    time1: f32,
+    radius: f32,
     mat_ptr: Arc<dyn Material>,
 }
 
@@ -23,9 +23,9 @@ impl MovingSphere {
     pub fn new(
         center0: Point3,
         center1: Point3,
-        time0: f64,
-        time1: f64,
-        radius: f64,
+        time0: f32,
+        time1: f32,
+        radius: f32,
         mat_ptr: Arc<dyn Material>,
     ) -> Self {
         Self {
@@ -38,14 +38,14 @@ impl MovingSphere {
         }
     }
 
-    fn center(&self, time: f64) -> Point3 {
+    fn center(&self, time: f32) -> Point3 {
         self.center0
             + ((time - self.time0) / (self.time1 - self.time0)) * (self.center1 - self.center0)
     }
 }
 
 impl Hittable for MovingSphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = ray.origin - self.center(ray.time);
         let a = ray.direction.dot(&ray.direction);
         let half_b = oc.dot(&ray.direction);
@@ -81,7 +81,7 @@ impl Hittable for MovingSphere {
         ))
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, time0: f32, time1: f32) -> Option<Aabb> {
         let box0 = Aabb::new(
             self.center(time0) - Vec3::new(self.radius, self.radius, self.radius),
             self.center(time0) + Vec3::new(self.radius, self.radius, self.radius),

@@ -17,9 +17,9 @@ pub mod translate;
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub t: f64,
-    pub u: f64,
-    pub v: f64,
+    pub t: f32,
+    pub u: f32,
+    pub v: f32,
     pub front_face: bool,
     pub mat_ptr: Arc<dyn Material>,
 }
@@ -28,9 +28,9 @@ impl HitRecord {
     pub fn new(
         p: Point3,
         outward_normal: Vec3,
-        t: f64,
-        u: f64,
-        v: f64,
+        t: f32,
+        u: f32,
+        v: f32,
         r: &Ray,
         mat_ptr: Arc<dyn Material>,
     ) -> Self {
@@ -53,9 +53,9 @@ impl HitRecord {
 }
 
 pub trait Hittable: Send + Sync {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
-    fn pdf_value(&self, _o: Point3, _v: Vec3) -> f64 {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
+    fn bounding_box(&self, time0: f32, time1: f32) -> Option<Aabb>;
+    fn pdf_value(&self, _o: Point3, _v: Vec3) -> f32 {
         0.0
     }
     fn random(&self, _o: Vec3) -> Vec3 {

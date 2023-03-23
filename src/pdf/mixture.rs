@@ -17,7 +17,7 @@ impl MixturePdf {
 }
 
 impl Pdf for MixturePdf {
-    fn value(&self, direction: Vec3) -> f64 {
+    fn value(&self, direction: Vec3) -> f32 {
         0.5 * self.p[0].value(direction) + 0.5 * self.p[1].value(direction)
     }
 

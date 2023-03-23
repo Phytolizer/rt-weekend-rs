@@ -3,7 +3,7 @@
 #![allow(clippy::too_many_arguments)]
 
 use std::time::Instant;
-use std::{f64, sync::Arc};
+use std::{f32, sync::Arc};
 
 use clap::Parser;
 use color::write_color;
@@ -44,7 +44,7 @@ fn random_vec() -> Vec3 {
     random_vec_range(0.0, 1.0)
 }
 
-fn random_vec_range(min: f64, max: f64) -> Vec3 {
+fn random_vec_range(min: f32, max: f32) -> Vec3 {
     let mut rng = rand::thread_rng();
     Vec3::new(
         rng.gen_range(min..max),
@@ -98,13 +98,16 @@ fn ray_color(
     if depth == 0 {
         return Color::zeros();
     }
-    if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
+    if let Some(rec) = world.hit(r, 0.001, f32::INFINITY) {
         let emitted = rec.mat_ptr.emitted(r, &rec, rec.u, rec.v, rec.p);
         if let Some(ScatterRecord {
             attenuation,
             scattered,
         }) = rec.mat_ptr.scatter(r, &rec)
         {
+            if emitted.near_zero() && attenuation.near_zero() {
+                return Color::zeros();
+            }
             match scattered {
                 ScatterType::Diffuse(pdf) => {
                     let light_ptr = Arc::new(HittablePdf::new(lights.clone(), rec.p));
@@ -319,6 +322,16 @@ fn main() {
             let lookfrom = Point3::new(278.0, 278.0, -800.0);
             let lookat = Point3::new(278.0, 278.0, 0.0);
             let vfov = 40.0;
+            let mut light_list = HittableList::new();
+            light_list.add(Arc::new(XzRect::new(
+                213.0,
+                343.0,
+                227.0,
+                332.0,
+                554.0,
+                Arc::new(Lambertian::new_color(Color::new(0.0, 0.0, 0.0))),
+            )));
+            lights = Arc::new(light_list);
             (
                 Camera::new(
                     lookfrom,
@@ -341,6 +354,16 @@ fn main() {
             let lookfrom = Point3::new(478.0, 278.0, -600.0);
             let lookat = Point3::new(278.0, 278.0, 0.0);
             let vfov = 40.0;
+            let mut light_list = HittableList::new();
+            light_list.add(Arc::new(XzRect::new(
+                123.0,
+                423.0,
+                147.0,
+                412.0,
+                554.0,
+                Arc::new(Lambertian::new_color(Color::new(0.0, 0.0, 0.0))),
+            )));
+            lights = Arc::new(light_list);
             (
                 Camera::new(
                     lookfrom,
@@ -359,7 +382,7 @@ fn main() {
         _ => unreachable!(),
     };
 
-    let image_height = (image_width as f64 / aspect_ratio) as usize;
+    let image_height = (image_width as f32 / aspect_ratio) as usize;
 
     let state = if options.live {
         let sdl = sdl2::init().unwrap();
@@ -402,10 +425,10 @@ fn main() {
             for i in 0..image_width {
                 let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..samples_per_pixel {
-                    let u = (i as f64 + rand::thread_rng().gen_range(0.0..1.0))
-                        / (image_width - 1) as f64;
-                    let v = (j as f64 + rand::thread_rng().gen_range(0.0..1.0))
-                        / (image_height - 1) as f64;
+                    let u = (i as f32 + rand::thread_rng().gen_range(0.0..1.0))
+                        / (image_width - 1) as f32;
+                    let v = (j as f32 + rand::thread_rng().gen_range(0.0..1.0))
+                        / (image_height - 1) as f32;
                     let r = camera.get_ray(u, v);
                     pixel_color += ray_color(&r, background, world.as_ref(), lights.clone(), max_depth);
                 }
@@ -417,7 +440,7 @@ fn main() {
     }
     let render_end = Instant::now();
     let render_time = render_end - render_start;
-    println!("Rendering took {} seconds", render_time.as_secs_f64());
+    println!("Rendering took {} seconds", render_time.as_secs_f32());
 
     match state {
         State::Online(mut state) => {

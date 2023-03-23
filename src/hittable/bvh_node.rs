@@ -16,7 +16,7 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-    pub fn new(list: &[Arc<dyn Hittable>], time0: f64, time1: f64) -> Self {
+    pub fn new(list: &[Arc<dyn Hittable>], time0: f32, time1: f32) -> Self {
         let mut objects = list.to_vec();
 
         let axis = rand::thread_rng().gen_range(0..3);
@@ -56,7 +56,7 @@ impl BvhNode {
 }
 
 impl Hittable for BvhNode {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         if !self.bb.hit(ray, t_min, t_max) {
             return None;
         }
@@ -70,7 +70,7 @@ impl Hittable for BvhNode {
         hit_right.or(hit_left)
     }
 
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _time0: f32, _time1: f32) -> Option<Aabb> {
         Some(self.bb.clone())
     }
 }

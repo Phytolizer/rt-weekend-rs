@@ -1,4 +1,4 @@
-use std::f64;
+use std::f32;
 use std::sync::Arc;
 
 use rand::Rng;
@@ -12,12 +12,12 @@ use super::{HitRecord, Hittable};
 
 pub struct Sphere {
     pub center: Point3,
-    pub radius: f64,
+    pub radius: f32,
     mat_ptr: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, mat_ptr: Arc<dyn Material>) -> Self {
+    pub fn new(center: Point3, radius: f32, mat_ptr: Arc<dyn Material>) -> Self {
         Self {
             center,
             radius,
@@ -25,21 +25,21 @@ impl Sphere {
         }
     }
 
-    pub(super) fn get_uv(p: Point3) -> (f64, f64) {
+    pub(super) fn get_uv(p: Point3) -> (f32, f32) {
         let theta = (-p.y).acos();
-        let phi = (-p.z).atan2(p.x) + f64::consts::PI;
+        let phi = (-p.z).atan2(p.x) + f32::consts::PI;
 
-        (phi / f64::consts::TAU, theta / f64::consts::PI)
+        (phi / f32::consts::TAU, theta / f32::consts::PI)
     }
 }
 
-fn random_to_sphere(radius: f64, distance_squared: f64) -> Vec3 {
+fn random_to_sphere(radius: f32, distance_squared: f32) -> Vec3 {
     let mut rng = rand::thread_rng();
     let r1 = rng.gen_range(0.0..1.0);
     let r2 = rng.gen_range(0.0..1.0);
     let z = 1.0 + r2 * ((1.0 - radius * radius / distance_squared).sqrt() - 1.0);
 
-    let phi = f64::consts::TAU * r1;
+    let phi = f32::consts::TAU * r1;
     let x = phi.cos() * (1.0 - z * z).sqrt();
     let y = phi.sin() * (1.0 - z * z).sqrt();
 
@@ -47,7 +47,7 @@ fn random_to_sphere(radius: f64, distance_squared: f64) -> Vec3 {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = ray.direction.dot(&ray.direction);
         let half_b = oc.dot(&ray.direction);
@@ -83,16 +83,16 @@ impl Hittable for Sphere {
         ))
     }
 
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _time0: f32, _time1: f32) -> Option<Aabb> {
         Some(Aabb::new(
             self.center - Vec3::new(self.radius, self.radius, self.radius),
             self.center + Vec3::new(self.radius, self.radius, self.radius),
         ))
     }
 
-    fn pdf_value(&self, o: Point3, v: Vec3) -> f64 {
+    fn pdf_value(&self, o: Point3, v: Vec3) -> f32 {
         if self
-            .hit(&Ray::new(o, v, 0.0), 0.001, f64::INFINITY)
+            .hit(&Ray::new(o, v, 0.0), 0.001, f32::INFINITY)
             .is_none()
         {
             return 0.0;
@@ -100,7 +100,7 @@ impl Hittable for Sphere {
 
         let cos_theta_max =
             (1.0 - self.radius * self.radius / (self.center - o).magnitude_squared()).sqrt();
-        let solid_angle = f64::consts::TAU * (1.0 - cos_theta_max);
+        let solid_angle = f32::consts::TAU * (1.0 - cos_theta_max);
 
         1.0 / solid_angle
     }

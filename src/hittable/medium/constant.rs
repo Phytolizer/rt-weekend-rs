@@ -1,4 +1,4 @@
-use std::f64;
+use std::f32;
 use std::sync::Arc;
 
 use rand::Rng;
@@ -16,11 +16,11 @@ use crate::Color;
 pub struct ConstantMedium {
     boundary: Arc<dyn Hittable>,
     phase_function: Arc<dyn Material>,
-    neg_inv_density: f64,
+    neg_inv_density: f32,
 }
 
 impl ConstantMedium {
-    pub fn new(boundary: Arc<dyn Hittable>, density: f64, albedo: Arc<dyn Texture>) -> Self {
+    pub fn new(boundary: Arc<dyn Hittable>, density: f32, albedo: Arc<dyn Texture>) -> Self {
         Self {
             boundary,
             neg_inv_density: -1.0 / density,
@@ -28,7 +28,7 @@ impl ConstantMedium {
         }
     }
 
-    pub fn new_color(boundary: Arc<dyn Hittable>, density: f64, color: Color) -> Self {
+    pub fn new_color(boundary: Arc<dyn Hittable>, density: f32, color: Color) -> Self {
         Self {
             boundary,
             neg_inv_density: -1.0 / density,
@@ -38,12 +38,12 @@ impl ConstantMedium {
 }
 
 impl Hittable for ConstantMedium {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         const enable_debug: bool = false;
         let debugging = enable_debug && rand::thread_rng().gen_ratio(1, 100000);
 
-        let mut rec1 = self.boundary.hit(ray, f64::NEG_INFINITY, f64::INFINITY)?;
-        let mut rec2 = self.boundary.hit(ray, rec1.t + 0.0001, f64::INFINITY)?;
+        let mut rec1 = self.boundary.hit(ray, f32::NEG_INFINITY, f32::INFINITY)?;
+        let mut rec2 = self.boundary.hit(ray, rec1.t + 0.0001, f32::INFINITY)?;
 
         if debugging {
             eprintln!("\nt_min={}, t_max={}", rec1.t, rec2.t);
@@ -62,8 +62,8 @@ impl Hittable for ConstantMedium {
         let distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
         let hit_distance = self.neg_inv_density
             * rand::thread_rng()
-                .gen_range(0.0f64..1.0)
-                .log(f64::consts::E);
+                .gen_range(0.0f32..1.0)
+                .log(f32::consts::E);
 
         if hit_distance > distance_inside_boundary {
             return None;
@@ -95,7 +95,7 @@ impl Hittable for ConstantMedium {
         })
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, time0: f32, time1: f32) -> Option<Aabb> {
         self.boundary.bounding_box(time0, time1)
     }
 }

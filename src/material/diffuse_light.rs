@@ -29,7 +29,7 @@ impl Material for DiffuseLight {
         None
     }
 
-    fn emitted(&self, _r_in: &Ray, rec: &HitRecord, u: f64, v: f64, p: Point3) -> Color {
+    fn emitted(&self, _r_in: &Ray, rec: &HitRecord, u: f32, v: f32, p: Point3) -> Color {
         if rec.front_face {
             self.emit.value(u, v, p)
         } else {

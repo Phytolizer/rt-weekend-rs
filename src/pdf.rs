@@ -5,6 +5,6 @@ pub mod hittable;
 pub mod mixture;
 
 pub trait Pdf {
-    fn value(&self, direction: Vec3) -> f64;
+    fn value(&self, direction: Vec3) -> f32;
     fn generate(&self) -> Vec3;
 }

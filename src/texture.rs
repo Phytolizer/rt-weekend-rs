@@ -7,5 +7,5 @@ pub mod noise;
 pub mod solid_color;
 
 pub trait Texture: Send + Sync {
-    fn value(&self, u: f64, v: f64, p: Point3) -> Color;
+    fn value(&self, u: f32, v: f32, p: Point3) -> Color;
 }

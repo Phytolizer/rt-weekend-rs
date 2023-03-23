@@ -9,16 +9,16 @@ use crate::Color;
 use super::ScatterType;
 
 pub struct Dielectric {
-    ref_idx: f64,
+    ref_idx: f32,
 }
 
 impl Dielectric {
-    pub fn new(ref_idx: f64) -> Self {
+    pub fn new(ref_idx: f32) -> Self {
         Self { ref_idx }
     }
 }
 
-fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
     let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     let r0 = r0 * r0;
     r0 + (1.0 - r0) * (1.0 - cosine).powi(5)

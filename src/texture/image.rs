@@ -31,23 +31,23 @@ impl ImageTexture {
 }
 
 impl Texture for ImageTexture {
-    fn value(&self, u: f64, v: f64, _p: Point3) -> Color {
+    fn value(&self, u: f32, v: f32, _p: Point3) -> Color {
         let u = u.clamp(0.0, 1.0);
         let v = 1.0 - v.clamp(0.0, 1.0);
 
-        let i = (u * self.width as f64) as u32;
-        let j = (v * self.height as f64) as u32;
+        let i = (u * self.width as f32) as u32;
+        let j = (v * self.height as f32) as u32;
 
         let i = i.min(self.width - 1);
         let j = j.min(self.height - 1);
 
-        const color_scale: f64 = 1.0 / 255.0;
+        const color_scale: f32 = 1.0 / 255.0;
         let pixel = self.data.get_pixel(i, j);
 
         Color::new(
-            color_scale * pixel[0] as f64,
-            color_scale * pixel[1] as f64,
-            color_scale * pixel[2] as f64,
+            color_scale * pixel[0] as f32,
+            color_scale * pixel[1] as f32,
+            color_scale * pixel[2] as f32,
         )
     }
 }

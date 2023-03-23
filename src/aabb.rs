@@ -16,7 +16,7 @@ impl Aabb {
         Self { min, max }
     }
 
-    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> bool {
+    pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> bool {
         let mut t_min = t_min;
         let mut t_max = t_max;
         for a in 0..3 {
