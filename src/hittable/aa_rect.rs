@@ -66,6 +66,29 @@ impl Hittable for XyRect {
             Point3::new(self.x1, self.y1, self.k + 0.0001),
         ))
     }
+
+    fn pdf_value(&self, o: Point3, v: Vec3) -> f32 {
+        let rec = match self.hit(&Ray::new(o, v, 0.0), 0.001, f32::INFINITY) {
+            Some(rec) => rec,
+            None => return 0.0,
+        };
+
+        let area = (self.x1 - self.x0) * (self.y1 - self.y0);
+        let distance_squared = rec.t * rec.t * v.magnitude_squared();
+        let cosine = (v.dot(&rec.normal) / v.magnitude()).abs();
+
+        distance_squared / (cosine * area)
+    }
+
+    fn random(&self, o: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let random_point = Point3::new(
+            rng.gen_range(self.x0..self.x1),
+            rng.gen_range(self.y0..self.y1),
+            self.k,
+        );
+        random_point - o
+    }
 }
 
 pub struct XzRect {
@@ -202,5 +225,28 @@ impl Hittable for YzRect {
             Point3::new(self.k - 0.0001, self.y0, self.z0),
             Point3::new(self.k + 0.0001, self.y1, self.z1),
         ))
+    }
+
+    fn pdf_value(&self, o: Point3, v: Vec3) -> f32 {
+        let rec = match self.hit(&Ray::new(o, v, 0.0), 0.001, f32::INFINITY) {
+            Some(rec) => rec,
+            None => return 0.0,
+        };
+
+        let area = (self.y1 - self.y0) * (self.z1 - self.z0);
+        let distance_squared = rec.t * rec.t * v.magnitude_squared();
+        let cosine = (v.dot(&rec.normal) / v.magnitude()).abs();
+
+        distance_squared / (cosine * area)
+    }
+
+    fn random(&self, o: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let random_point = Point3::new(
+            self.k,
+            rng.gen_range(self.y0..self.y1),
+            rng.gen_range(self.z0..self.z1),
+        );
+        random_point - o
     }
 }

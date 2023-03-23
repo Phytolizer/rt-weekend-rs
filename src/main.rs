@@ -16,6 +16,7 @@ use pdf::{hittable::HittablePdf, Pdf};
 use rand::Rng;
 use ray::Ray;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+use sdl2::render::WindowCanvas;
 
 use crate::camera::Camera;
 use crate::hittable::aa_rect::XzRect;
@@ -161,7 +162,7 @@ struct Options {
 }
 
 struct SdlState {
-    canvas: sdl2::render::WindowCanvas,
+    canvas: WindowCanvas,
     event_pump: sdl2::EventPump,
 }
 
